@@ -75,11 +75,17 @@
 | 融合×平地 | fusion(v6) | 纯平地 | `joints_fusion_flat.npz` | ✅ 已采 |
 | 模仿专家×平地 | flat policy | 纯平地 | `expert_joints_flat.npz` | ✅ 已采 |
 | 感知专家×崎岖 | rough policy | 纯崎岖 | `expert_joints_rough.npz` | ✅ 已采 |
+| **DAgger×崎岖** | dagger α网络 | 纯崎岖 | `joints_dagger_rough.npz` | ✅ 已采 |
+| **DAgger×平地** | dagger α网络 | 纯平地 | `joints_dagger_flat.npz` | ✅ 已采 |
 | 模仿专家×崎岖 | flat policy | 纯崎岖 | (可选对照) | ⬜ 可选,未采 |
 | 感知专家×平地 | rough policy | 纯平地 | (可选对照) | ⬜ 可选,未采 |
 
-> **主对照矩阵已完整**：{模仿专家, 感知专家, 融合} × {平地, 崎岖} 的核心 4 份数据全部采集完毕。
-> 剩余两份是交叉对照(专家跨地形，看短板)，可选，暂未采。
+> **主对照矩阵已完整**：{模仿专家, 感知专家, 融合(v6), DAgger} × {平地, 崎岖} 的核心数据已采。
+> DAgger 数据是最终成果 —— 同一 α 网络在两地形上 α2 分化(平地 0.40 / 崎岖 0.80),
+> 即"随地形切换"的直接证据。剩余两份专家跨地形对照可选,暂未采。
+
+> **另有 DAgger 训练数据集** `dagger_dataset.npz`(19.2 万样本, 含 raw_obs+height_scan+label1+label2)
+> 和训好的 α 网络 `dagger_alpha_net.pt`,均已本地备份。
 
 ### 专家主场性能(采集时记录)
 
