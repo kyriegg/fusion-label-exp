@@ -39,6 +39,8 @@ parser.add_argument("--modes", default="all",
                     help="逗号分隔: flat,rough,avg,fusion 或 all")
 parser.add_argument("--terrain", default="rough", choices=["rough", "flat"],
                     help="评估地形: rough=崎岖(默认), flat=平坦")
+parser.add_argument("--dagger_ckpt", default=None,
+                    help="监督训的 alpha 网络 (dagger_alpha_net.pt), 设了则跑 dagger 模式")
 parser.add_argument("--terrain_obs", action="store_true",
                     help="alpha 网络使用地形观测 (评估 v3 模型时必须加)")
 AppLauncher.add_app_launcher_args(parser)
@@ -68,6 +70,7 @@ REWARD_CFG = {
 }
 
 MODES = {
+    "dagger": "DAGGER",   # 监督训的 alpha 网络 (需 --dagger_ckpt)
     "flat":   torch.tensor([1.0, 0.0]),    # 纯模仿侧
     "rough":  torch.tensor([0.0, 1.0]),    # 纯感知侧
     "avg":    torch.tensor([0.5, 0.5]),    # 朴素平均
@@ -123,9 +126,32 @@ def run_mode(name, alpha_override, ckpt, args, device):
     env = G1FusionEnv(base_env, args.flat_policy, args.rough_policy, REWARD_CFG,
                       robot=args.robot, device=device, alpha_override=alpha_override)
 
-    # ---- fusion 模式: 在这个 env 上直接构建 runner 加载权重 ----
+    # ---- dagger 模式: 加载监督训的 alpha 网络, 挂到 env ----
     policy = None
-    if alpha_override is None:
+    if alpha_override == "DAGGER":
+        import torch.nn as nn
+        pack = torch.load(args.dagger_ckpt, map_location=device)
+        hid = pack.get("hid", [256, 128]); in_dim = pack["in_dim"]
+        layers, dd = [], in_dim
+        for h in hid:
+            layers += [nn.Linear(dd, h), nn.ELU()]; dd = h
+        layers.append(nn.Linear(dd, 1))
+        net = nn.Sequential(*layers).to(device)
+        # 重建时用 Sequential, 但保存的是带 sigmoid 的 forward -> 包一层
+        class _Wrap(nn.Module):
+            def __init__(s, seq): super().__init__(); s.seq = seq
+            def forward(s, x): return torch.sigmoid(s.seq(x))
+        wrap = _Wrap(net).to(device)
+        # state_dict 的 key 是 net.0/net.2...; 适配
+        sd = pack["alpha_net"]
+        new_sd = {k.replace("net.", "seq."): v for k, v in sd.items()}
+        wrap.load_state_dict(new_sd)
+        wrap.eval()
+        env.dagger_net = wrap
+        print(f"    已加载 dagger alpha 网络: {args.dagger_ckpt}", flush=True)
+
+    # ---- fusion 模式: 在这个 env 上直接构建 runner 加载权重 ----
+    elif alpha_override is None:
         agent_cfg = load_cfg_from_registry(args.task, "rsl_rl_cfg_entry_point")
         agent_cfg.experiment_name = args.exp_name
         agent_cfg = handle_deprecated_rsl_rl_cfg(
@@ -152,8 +178,12 @@ def run_mode(name, alpha_override, ckpt, args, device):
     for _step in range(args.steps):
         if _step % 250 == 0:
             print(f"    ... {_step}/{args.steps} 步", flush=True)
-        act = policy(obs) if policy is not None else torch.zeros(
-            env.num_envs, 2, device=device)
+        if env.dagger_net is not None:
+            act = torch.zeros(env.num_envs, 2, device=device)  # 占位, env内部用dagger_net
+        elif policy is not None:
+            act = policy(obs)
+        else:
+            act = torch.zeros(env.num_envs, 2, device=device)
         obs, _rew, dones, extras = env.step(act)
         obs = obs.to(device)
         log = extras.get("log", {})

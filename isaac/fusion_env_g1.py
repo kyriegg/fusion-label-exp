@@ -39,6 +39,7 @@ class G1FusionEnv:
         self.device = device
         self.rcfg = reward_cfg
         self.alpha_override = alpha_override   # (2,) 或 None
+        self.dagger_net = None   # 若设置, 每帧用它从观测算 alpha2 (监督训的网络)
 
         self.flat_policy = torch.jit.load(flat_policy_jit, map_location=device).eval()
         self.rough_policy = torch.jit.load(rough_policy_jit, map_location=device).eval()
@@ -180,7 +181,13 @@ class G1FusionEnv:
 
     # ------------------------------------------------------------------
     def step(self, alpha_logits: torch.Tensor):
-        if self.alpha_override is not None:
+        if self.dagger_net is not None:
+            # 监督训的 alpha 网络: 输入 [label1, label2, raw_obs] -> a2
+            with torch.no_grad():
+                x = torch.cat([self.label1, self.label2, self._raw_obs], dim=-1)
+                a2 = self.dagger_net(x).view(-1)              # (N,)
+            alpha = torch.stack([1.0 - a2, a2], dim=-1)       # (N,2)
+        elif self.alpha_override is not None:
             alpha = self.alpha_override.to(self.device).expand(self.num_envs, 2)
         else:
             alpha = torch.softmax(alpha_logits, dim=-1)
