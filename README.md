@@ -1,7 +1,3 @@
-
-
-https://github.com/user-attachments/assets/db3ef3e8-bbc8-4697-be7c-ab7d2330ba0c
-
 # Function Label 融合实验(G1 人形 · Isaac Lab)
 
 冻结一个**模仿 policy** 与一个**感知 policy**,只训练一个轻量 α 网络输出融合系数,
