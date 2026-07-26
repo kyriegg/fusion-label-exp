@@ -1,3 +1,7 @@
+
+
+https://github.com/user-attachments/assets/db3ef3e8-bbc8-4697-be7c-ab7d2330ba0c
+
 # Function Label 融合实验(G1 人形 · Isaac Lab)
 
 冻结一个**模仿 policy** 与一个**感知 policy**,只训练一个轻量 α 网络输出融合系数,
@@ -28,12 +32,12 @@ hybrid = α1 ⊙ label1(模仿) + α2 ⊙ label2(感知)
 <!-- 在 GitHub 网页编辑 README, 把下面两个视频文件直接拖到对应位置生成播放器 -->
 
 **平地(α2≈0.40, 偏模仿):**
+https://github.com/user-attachments/assets/e807e944-8931-40c5-9190-62f9a3010591
 
-<!-- 拖入 dagger_flat_replay.mp4 -->
 
 **崎岖(α2≈0.80, 偏感知):**
+https://github.com/user-attachments/assets/18aa0ead-2407-49f8-9206-53839b3a071b
 
-<!-- 拖入 dagger_rough_replay.mp4 -->
 
 ## 代码
 
