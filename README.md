@@ -28,10 +28,12 @@ hybrid = α1 ⊙ label1(模仿) + α2 ⊙ label2(感知)
 <!-- 在 GitHub 网页编辑 README, 把下面两个视频文件直接拖到对应位置生成播放器 -->
 
 **平地(α2≈0.40, 偏模仿):**
+
 https://github.com/user-attachments/assets/e807e944-8931-40c5-9190-62f9a3010591
 
 
 **崎岖(α2≈0.80, 偏感知):**
+
 https://github.com/user-attachments/assets/18aa0ead-2407-49f8-9206-53839b3a071b
 
 
