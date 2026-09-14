@@ -74,3 +74,12 @@ isaaclab.bat -p isaac/eval_policies.py \
 
 提升切换锐度(增大地形对比度 / 迭代 DAgger);上下半身解耦;接入真实模仿/感知网络
 (切换机制 DAgger + height_scan 可直接复用)。
+
+## 第二阶段:接入真实网络 (2026-09, [g1_29dof_fusion/](g1_29dof_fusion/))
+
+按上面"下一步"的计划,把替身策略换成了真实的 SMP(人类风格)策略和 29-DOF 地形感知策略,
+并计划加入舞蹈参考轨迹作为第三路。移植了这一阶段验证过的 DAgger + height_scan 切换机制,
+但在这套更复杂的真实系统里**尚未复现第一阶段的成功**——目前所有融合方案(含移植后的 DAgger)
+都还没有跑赢"直接单独使用地形感知策略"这个基线。完整过程、排查记录和待讨论问题见
+**[g1_29dof_fusion/docs/PROBLEMS.md](g1_29dof_fusion/docs/PROBLEMS.md)**,关键数字见
+[g1_29dof_fusion/docs/results_summary.csv](g1_29dof_fusion/docs/results_summary.csv)。

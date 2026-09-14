@@ -1,0 +1,10 @@
+date,experiment,drive_mode,fall_rate,avg_survival_steps,alpha2_mean,alpha2_std,sample_episodes,notes
+2026-09-11,rough_policy standalone (final),rough only,24%,,,,,"terrain curriculum 0->0.82; smp_style reward x10 over training"
+2026-09-11,3-way fusion v1 (smp+rough+dance),PPO-trained alpha,~100%,,0.93 (dance weight),,,"alpha collapsed onto dance reference (easy to fake)"
+2026-09-12,2-way fusion (no-dance, stopped early),PPO-trained alpha,~98-100%,,~0.20-0.25 (rough weight),,,"user stopped at iter 1369/3000, still falling"
+2026-09-13,2-way fusion + flatpatch/is_alive/foot_volume,PPO-trained alpha,~100%,,0.13-0.17 (rough weight),,,"terrain_levels never advanced off ~0"
+2026-09-14,isolation diagnostic: pure smp,fixed alpha=[1,0],100.0%,88.2,,,378,"smp never trained on this rough terrain distribution"
+2026-09-14,isolation diagnostic: pure rough,fixed alpha=[0,1],58.3%,683.3,,,84,"first attempt at 600 steps misleadingly showed 100% (n=8); corrected with 2000-step window"
+2026-09-14,DAgger single-round (smp_score signal),supervised alpha net,100.0%,153.1,0.518,0.042,766,"offline eval showed clean divergence (0.27/0.76) but collapsed on deployment"
+2026-09-14,DAgger single-round (height_scan signal),supervised alpha net,99.8%,76.3,0.507,0.045,1448,"offline eval showed clean divergence (0.30/0.87) but collapsed on deployment; worse survival than smp_score variant"
+2026-09-14,DAgger two-round iterated (height_scan signal),supervised alpha net (aggregated data),98.5%,160.3,0.689,0.035,478,"true DAgger aggregation: 2nd collection round driven by round-1 net; improved but still far below pure-rough baseline"
